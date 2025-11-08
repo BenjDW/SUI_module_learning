@@ -78,13 +78,13 @@ module module_3::hero;
 
         let _hero_metadata = HeroMetadata {
             id: object::new(ctx),// TODO: Create the HeroMetadata object,
-            timestamp: clock::timestamp_ms(&clock::read(ctx)),// TODO: Get the epoch timestamp ,
+            timestamp: ctx.epoch_timestamp_ms(),// TODO: Get the epoch timestamp ,
         };
 
         transfer::transfer(hero, ctx.sender());
 
         // TODO: Freeze the HeroMetadata object
-        object::freeze_object(_hero_metadata);
+        transfer::freeze_object(_hero_metadata);
     }
 
     public entry fun list_hero(nft: Hero, price: u64, ctx: &mut TxContext) {
@@ -106,7 +106,7 @@ module module_3::hero;
             id: object::id(&list_hero.hero),
             price,
             seller: ctx.sender(),
-            timestamp: clock::timestamp_ms(&clock),
+            timestamp: ctx.epoch_timestamp_ms(),
         });
 
         // TODO: Share the ListHero object
@@ -116,6 +116,7 @@ module module_3::hero;
     public entry fun buy_hero(list_hero: ListHero, coin: Coin<SUI>, ctx: &mut TxContext) {
         // TODO: Deconstruct the ListHero object
         let ListHero {id, hero, price, seller} = list_hero;
+        let hero_id = object::id(&hero);
         // TODO: Assert the price of the Hero is equal to the coin amount
         assert!(coin::value(&coin) == price, 1);
         // TODO: Transfer the coin to the seller
@@ -124,11 +125,11 @@ module module_3::hero;
         transfer::public_transfer(hero, ctx.sender());
         // TODO: Emit the HeroBought event
         event::emit(HeroBought {
-            id: object::id(&hero),
+            id: hero_id,
             price: price,
             buyer: ctx.sender(),
             seller: seller,
-            timestamp: clock::timestamp_ms(&clock::read(ctx)),
+            timestamp: ctx.epoch_timestamp_ms(),
         });
         // TODO: Destroy the ListHero object
         object::delete(id);
